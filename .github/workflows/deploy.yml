@@ -12,11 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Шаг 2: Собираем проект (Maven/Gradle)
-      - name: Build with Maven
+      # Шаг 2: Собираем Docker образ
+      - name: Build Docker image
         run: |
-          mvn clean package
-          ls -la target/  # Проверяем что JAR создан
+          docker build -t gift_bot .
+          docker save gift_bot -o gift_bot.tar
 
       # Шаг 3: Деплой на сервер
       - name: Deploy to production
@@ -30,4 +30,5 @@ jobs:
             cd /home/vm-user/gift_bot
             docker-compose down || true
             GIT_SSH_COMMAND='ssh -i ~/.ssh/gift_bot_key -o IdentitiesOnly=yes' git clone git@github.com:Alvagonas/gift_bot.git .
-            docker-compose up --build -d
+            docker load -i gift_bot.tar
+            docker-compose up -d
