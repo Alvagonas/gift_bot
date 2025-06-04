@@ -20,8 +20,13 @@ jobs:
       - name: Build with Maven
         run: |
           chmod +x ./mvnw
-          ./mvnw clean package -DskipTests 
+          ./mvnw clean package -DskipTests
+          # Проверка что JAR собран
           ls -la target/
+          if [ ! -f "target/gift_bot-0.0.1-SNAPSHOT.jar" ]; then
+            echo "Error: JAR file not found!"
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -42,7 +47,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy to server
+      - name: Deploy to VM
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
@@ -50,7 +55,24 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            # Создаем директорию если не существует
+            mkdir -p /home/vm-user/gift_bot
+            
+            # Копируем необходимые файлы на сервер
+            echo "Copying files to VM..."
+            scp -o StrictHostKeyChecking=no -P ${{ secrets.PORT }} \
+              docker-compose.yml .env ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/vm-user/gift_bot/
+            
+            # Авторизуемся в GHCR
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Останавливаем старый контейнер и запускаем новый
             cd /home/vm-user/gift_bot
             docker-compose down || true
-            docker pull ghcr.io/alvagonas/gift_bot:latest
+            docker-compose pull
             docker-compose up -d
+            
+            # Проверяем что контейнер запустился
+            sleep 10
+            docker ps | grep gift_bot || { echo "Container failed to start"; exit 1; }
+            echo "Deployment successful!"
