@@ -24,6 +24,17 @@ jobs:
           ./mvnw clean package -DskipTests
           ls -la target/
 
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Создаем директорию для проекта
+            mkdir -p /home/vm-user/gift_bot
+
       - name: Copy project to VM
         uses: appleboy/scp-action@v0.1.5
         with:
