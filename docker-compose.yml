@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17.5
     container_name: postgres
     environment:
-      POSTGRES_DB: ${DB_NAME:-gift_db}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: gift_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,22 +17,19 @@ services:
       retries: 5
 
   app:
+    build: .  # Собираем из Dockerfile
     container_name: giftservice
-    build: .
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-gift_db}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-password}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${DB_DDL_AUTO:-update}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/gift_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "8080:8080"
     restart: unless-stopped
-    volumes:
-      - ./configs:/app/configs:ro
-      - ./logs:/app/logs
 
 volumes:
   postgres_data:
