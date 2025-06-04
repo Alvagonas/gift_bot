@@ -1,13 +1,13 @@
-# Этап сборки (используем Maven для сборки)
-FROM maven:3.9.9 AS build
+# Этап сборки (Maven + Java 21)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Этап запуска (используем только JAR)
+# Этап запуска (только JAR + Java 21)
 FROM eclipse-temurin:21
 WORKDIR /app
-COPY --from=build /app/target/gift-service-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/gift-service-*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

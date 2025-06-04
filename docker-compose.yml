@@ -1,7 +1,7 @@
 services:
   postgres:
-    image: postgres:17.5  # Официальный образ PostgreSQL 17.5
-    container_name: postgres
+    image: postgres:17.5
+    container_name: postgres  # Явное имя для избежания конфликтов
     environment:
       POSTGRES_DB: gift_db
       POSTGRES_USER: postgres
@@ -10,23 +10,22 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
+    healthcheck:  # Добавляем healthcheck
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   app:
-    build: .  # Собираем из Dockerfile
-    container_name: giftservice
+    build: .
+    container_name: giftservice  # Фиксированное имя
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy  # Ждём готовности PostgreSQL
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/gift_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update  # Автоматическое обновление схемы
     ports:
       - "8080:8080"
     restart: unless-stopped
