@@ -11,6 +11,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. Сначала собираем JAR через Maven
+      - name: Build with Maven
+        run: |
+          ./mvnw clean package
+          ls -la target/  # Проверяем, что файл создан
+
+      # 2. Затем собираем и пушим Docker-образ
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -21,12 +28,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ghcr.io/alvagonas/gift_bot:latest  # Замените "alvagonas" на ваш логин!
+          tags: ghcr.io/alvagonas/gift_bot:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -40,5 +47,5 @@ jobs:
           script: |
             cd /home/vm-user/gift_bot
             docker-compose down || true
-            docker pull ghcr.io/alvagonas/gift_bot:latest  # Должно совпадать с tags!
+            docker pull ghcr.io/alvagonas/gift_bot:latest
             docker-compose up -d
