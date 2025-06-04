@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.example</groupId>
-    <artifactId>gift_bot</artifactId>
+    <artifactId>gift-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gift-service</name>
     <description>Gift Service Application</description>
