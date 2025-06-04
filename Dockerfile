@@ -5,7 +5,7 @@ FROM eclipse-temurin:21
 WORKDIR /app
 
 # Копируем собранный JAR (предварительно собранный через Maven/Gradle)
-COPY target/gift-service-0.0.1-SNAPSHOT.jar app.jar
+COPY target/gift_bot-0.0.1-SNAPSHOT.jar app.jar
 
 # Открываем порт приложения
 EXPOSE 8080
