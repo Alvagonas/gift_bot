@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17.5
@@ -19,7 +17,9 @@ services:
       retries: 5
 
   app:
-    image: ghcr.io/alvagonas/gift_bot:latest
+    build:
+      context: .   # Путь к папке с Dockerfile и проектом
+      dockerfile: Dockerfile
     container_name: giftservice
     depends_on:
       postgres:
