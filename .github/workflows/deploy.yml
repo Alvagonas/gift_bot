@@ -31,9 +31,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
-          script: |
-            # Создаем директорию для проекта
-            mkdir -p /home/vm-user/gift_bot
 
       - name: Copy project to VM
         uses: appleboy/scp-action@v0.1.5
@@ -55,17 +52,5 @@ jobs:
           script: |
             cd /home/vm-user/gift_bot
             docker-compose down || true
-            docker-compose build --no-cache
             docker-compose up -d
 
-            # Проверка запуска приложения
-            for i in {1..5}; do
-              if docker ps | grep giftservice; then
-                echo "Gift Bot container started"
-                exit 0
-              fi
-              sleep 5
-            done
-
-            echo "Gift Bot failed to start"
-            docker-compose logs
