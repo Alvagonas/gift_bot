@@ -1,14 +1,25 @@
-name: deploy.yml
+name: CI/CD Pipeline
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to server
+      # Шаг 1: Получаем код из репозитория
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Шаг 2: Собираем проект (Maven/Gradle)
+      - name: Build with Maven
+        run: |
+          mvn clean package
+          ls -la target/  # Проверяем что JAR создан
+
+      # Шаг 3: Деплой на сервер
+      - name: Deploy to production
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
@@ -17,5 +28,20 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /home/vm-user/gift_bot
-            GIT_SSH_COMMAND='ssh -i ~/.ssh/gift_bot_key -o IdentitiesOnly=yes' git clone git@github.com:Alvagonas/gift_bot.git
+            
+            # Останавливаем старые контейнеры (если есть)
+            docker-compose down || true
+            
+            # Обновляем код
+            if [ -d .git ]; then
+              git pull origin main
+            else
+              GIT_SSH_COMMAND='ssh -i ~/.ssh/gift_bot_key -o IdentitiesOnly=yes' git clone git@github.com:Alvagonas/gift_bot.git .
+            fi
+            
+            # Запускаем сервисы
             docker-compose up --build -d
+            
+            # Проверяем что контейнеры работают
+            docker ps
+            docker-compose logs
