@@ -55,24 +55,37 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Создаем директорию если не существует
+            # Создаем директорию
             mkdir -p /home/vm-user/gift_bot
-            
-            # Копируем необходимые файлы на сервер
-            echo "Copying files to VM..."
-            scp -o StrictHostKeyChecking=no -P ${{ secrets.PORT }} \
-              docker-compose.yml .env ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/vm-user/gift_bot/
-            
-            # Авторизуемся в GHCR
+
+            # Копируем ТОЛЬКО если файлы существуют
+            if [ -f "docker-compose.yml" ]; then
+              scp -o StrictHostKeyChecking=no -P ${{ secrets.PORT }} \
+                docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/vm-user/gift_bot/
+            fi
+
+            if [ -f ".env" ]; then
+              scp -o StrictHostKeyChecking=no -P ${{ secrets.PORT }} \
+                .env ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/vm-user/gift_bot/
+            fi
+
+            # Авторизация в GHCR
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Останавливаем старый контейнер и запускаем новый
+
+            # Обновляем и запускаем контейнер
             cd /home/vm-user/gift_bot
             docker-compose down || true
-            docker-compose pull
+            docker-compose pull || true
             docker-compose up -d
-            
-            # Проверяем что контейнер запустился
-            sleep 10
-            docker ps | grep gift_bot || { echo "Container failed to start"; exit 1; }
-            echo "Deployment successful!"
+
+            # Проверка запуска с таймаутом
+            for i in {1..5}; do
+              if docker ps | grep gift_bot; then
+                echo "Container started successfully"
+                exit 0
+              fi
+              sleep 5
+            done
+
+            echo "Container failed to start"
+            docker-compose logs
