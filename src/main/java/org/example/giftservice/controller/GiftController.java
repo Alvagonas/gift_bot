@@ -15,21 +15,26 @@ public class GiftController {
     private GiftService giftService;
 
     @PostMapping
-    public ResponseEntity<GiftResponse> processGiftRequest(
-            @RequestParam String recipientName,
-            @RequestParam Integer age,
-            @RequestParam String hobbies,
-            @RequestParam String budget) {
+    public ResponseEntity<GiftResponse> processGiftRequest(@RequestBody GiftRequest request) {
+        GiftRequest savedRequest = giftService.processRequest(
+                request.getRecipientName(),
+                request.getAge(),
+                request.getHobbies(),
+                request.getBudget()
+        );
 
-        GiftRequest request = giftService.processRequest(recipientName, age, hobbies, budget);
         String fullText = String.format(
                 "Привет ИИ, я хочу подобрать подарок для %s, ей/ему %d лет, он/она любит/занимается %s, бюджет подарка %s",
-                recipientName, age, hobbies, budget);
+                savedRequest.getRecipientName(),
+                savedRequest.getAge(),
+                savedRequest.getHobbies(),
+                savedRequest.getBudget()
+        );
 
         GiftResponse response = new GiftResponse();
-        response.setId(request.getId());
+        response.setId(savedRequest.getId());
         response.setFullRequestText(fullText);
-        response.setCreatedAt(request.getCreatedAt());
+        response.setCreatedAt(savedRequest.getCreatedAt());
 
         return ResponseEntity.ok(response);
     }

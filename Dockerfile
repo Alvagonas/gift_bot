@@ -1,19 +1,14 @@
-# Используем официальный образ OpenJDK 21
-FROM eclipse-temurin:21-jdk
+# Используем официальный образ с Java 21
+FROM eclipse-temurin:21
 
-# Создаем рабочую директорию
+# Рабочая директория
 WORKDIR /app
 
-# Копируем Maven wrapper и pom.xml
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Копируем собранный JAR (предварительно собранный через Maven/Gradle)
+COPY target/gift-service-0.0.1-SNAPSHOT.jar app.jar
 
-# Копируем исходный код
-COPY src ./src
+# Открываем порт приложения
+EXPOSE 8080
 
-# Собираем приложение
-RUN ./mvnw package -DskipTests
-
-# Указываем команду для запуска приложения
-ENTRYPOINT ["java", "-jar", "target/gift-service-0.0.1-SNAPSHOT.jar"]
+# Запуск приложения
+ENTRYPOINT ["java", "-jar", "app.jar"]
