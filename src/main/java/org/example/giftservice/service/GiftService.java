@@ -1,3 +1,4 @@
+
 package org.example.giftservice.service;
 
 import org.example.giftservice.model.GiftRequest;
@@ -28,7 +29,6 @@ public class GiftService {
                 "Привет ИИ, я хочу подобрать подарок для %s, ей/ему %d лет, он/она любит/занимается %s, бюджет подарка %s",
                 recipientName, age, hobbies, budget);
         request.setFullRequestText(fullText);
-
         return giftRepository.save(request);
     }
 }

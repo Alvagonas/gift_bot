@@ -15,7 +15,7 @@ public class GiftController {
     private GiftService giftService;
 
     @PostMapping
-    public ResponseEntity<GiftResponse> processGiftRequest(@RequestBody GiftRequest request) {
+    public ResponseEntity<GiftResponse> GiftRequest(@RequestBody GiftRequest request) {
         GiftRequest savedRequest = giftService.processRequest(
                 request.getRecipientName(),
                 request.getAge(),

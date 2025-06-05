@@ -18,7 +18,7 @@ services:
 
   app:
     build:
-      context: .   # Путь к папке с Dockerfile и проектом
+      context: .
       dockerfile: Dockerfile
     container_name: giftservice
     depends_on:
