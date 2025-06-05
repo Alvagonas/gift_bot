@@ -1,4 +1,3 @@
-
 package org.example.giftservice.service;
 
 import org.example.giftservice.model.GiftRequest;
@@ -6,6 +5,8 @@ import org.example.giftservice.repository.GiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -30,5 +31,8 @@ public class GiftService {
                 recipientName, age, hobbies, budget);
         request.setFullRequestText(fullText);
         return giftRepository.save(request);
+    }
+    public Optional<GiftRequest> getGiftRequestById(Long id) {
+        return giftRepository.findById(id);
     }
 }
