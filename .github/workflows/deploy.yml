@@ -21,18 +21,8 @@ jobs:
       - name: Build with Maven
         run: |
           chmod +x ./mvnw
-          ./mvnw clean package -DskipTests
+          ./mvnw clean package
           ls -la target/
-
-      - name: Copy project to VM
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "."
-          target: "/home/vm-user/gift_bot"
 
       - name: Build and run Docker on VM
         uses: appleboy/ssh-action@v0.1.7
@@ -44,6 +34,6 @@ jobs:
           script: |
             cd /home/vm-user/gift_bot
             docker-compose down || true
-            docker-compose build --no-cache
-            docker-compose up -d
+            GIT_SSH_COMMAND='ssh -i ~/.ssh/gift_bot_key -o IdentitiesOnly=yes' git pull origin main
+            docker-compose up --build -d
 

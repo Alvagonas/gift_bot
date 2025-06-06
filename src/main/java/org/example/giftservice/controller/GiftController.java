@@ -16,7 +16,7 @@ public class GiftController {
 
     @Autowired
     private GiftService giftService;
-    @PostMapping("/{id}")
+    @PostMapping
     public ResponseEntity<GiftResponse> createGiftRequest(@RequestBody GiftRequest request) {
         GiftRequest savedRequest = giftService.processRequest(
                 request.getRecipientName(),
